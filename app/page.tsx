@@ -1,29 +1,35 @@
 'use client';
-import { useEffect, useState } from 'react';
-type Status = '未开始'|'进行中'|'已完成'|'等待他人'|'暂停';
-type Task = {id:string;area:string;result:string;next:string;priority:string;status:Status};
-const week=[
-{day:'周一',morning:'选题与核心观点',evening:'家庭 / 休息',kind:'rest'},
-{day:'周二',morning:'口播初稿',evening:'果果 AI 日',note:'真实互动 · 积累素材',kind:'ai'},
-{day:'周三',morning:'修改与试录',evening:'剪辑日',note:'整理已有故事',kind:'edit'},
-{day:'周四',morning:'正式录口播 / OBS',evening:'果果 AI 日',note:'真实互动 · 积累素材',kind:'ai'},
-{day:'周五',morning:'补录 · 标题 · 封面',evening:'剪辑日或家庭',kind:'edit'},
-{day:'周末',morning:'仅在需要时补缺',evening:'完成剪辑 / 发布',note:'也可以户外或纯家庭时间',kind:'weekend'}];
-const defaults:Task[]=[
-{id:'agent',area:'工作',result:'智能体大赛申报材料定稿并提交',next:'约项目组讨论时间，提前发送初稿',priority:'最高',status:'进行中'},
-{id:'demand',area:'工作',result:'需求分级分类形成可讨论版本',next:'明确分级维度、分类规则、流程和示例',priority:'高',status:'未开始'},
-{id:'weekly',area:'固定运转',result:'周报、通报、测试、审核和时效跟踪',next:'统一收集数据，固定窗口批量处理',priority:'高',status:'未开始'},
-{id:'family',area:'家庭 / AI',result:'至少一次果果 AI 真实互动',next:'不设计台词，只记录真实过程',priority:'中',status:'未开始'},
-{id:'media',area:'自媒体',result:'争取完成一条视频',next:'早晨口播，隔晚剪辑；没有好内容不硬发',priority:'中',status:'未开始'}];
-const parking=[['小红书起号','四周后再看','暂不启动'],['学习 IMA','有真实需求时','停车'],['DeepSeek / Harness','甜甜进入相关阶段时','停车'],['价值魔方体系','智能体大赛关键节点后','稍后推进']];
+import { useEffect, useMemo, useRef, useState } from 'react';
+type Status='未开始'|'进行中'|'等待他人'|'已完成'|'暂停';
+type Log={date:string;text:string};
+type Task={id:string;area:string;title:string;next:string;cycle:string;priority:'最高'|'高'|'中'|'低';status:Status;focus:boolean;note:string;logs:Log[]};
+const raw=[
+['agent','工作','智能体大赛申报材料','约项目组讨论，提前发送初稿','本周','最高','进行中',true],['classify','工作','需求分级分类','形成分级维度、分类规则、判断流程和示例','本周','高','未开始',true],['review','工作','需求回检方案','选择5个需求回检并形成报告','8月31日','高','未开始',false],['signal','工作','需求信号萃取机制','完成宣导、POC和指南初稿','8月31日','中','未开始',false],['weekly','工作','项目周报与业务通报','集中收集，一次复用','每周','高','未开始',true],['test','工作','项目测试与科技时效跟踪','集中更新状态与风险','每周','高','未开始',true],['school','生活与家庭','果果秋季开学准备','确认学校清单并逐项完成','9月1日','中','未开始',true],['family','生活与家庭','不被工作打断的家庭时间','提前约定一段专注陪伴时间','每周','中','未开始',true],['learn','个人成长','AI学习与表达','早晨完成一个可验收的小成果','每周','中','未开始',false],['guoguo','AI与果果','果果AI真实互动','只记录真实过程，不设计台词','每周','中','未开始',true],['media','AI与自媒体','发布一条主视频','从真实经历提炼，无好内容不硬发','每周','中','未开始',false],['tiantian','甜甜产品','甜甜分身模型','维持当前节奏，声音和知识库依次排队','持续','中','进行中',false],['rest','休息娱乐','主动恢复','游戏、放空或早睡均可','每周','低','未开始',true]];
+const seed:Task[]=raw.map(x=>({id:x[0] as string,area:x[1] as string,title:x[2] as string,next:x[3] as string,cycle:x[4] as string,priority:x[5] as Task['priority'],status:x[6] as Status,focus:x[7] as boolean,note:'',logs:[]}));
+const parking=[['小红书起号','四周后再看'],['学习 IMA','出现真实整理需求时'],['DeepSeek / Harness','甜甜进入相关阶段时'],['价值魔方体系','智能体大赛关键节点后']];
+const rhythm=[['周一','输入与选题','家庭 / 休息'],['周二','口播初稿','果果 AI 日'],['周三','修改与试录','剪辑日'],['周四','正式录音 / OBS','果果 AI 日'],['周五','补录 · 标题 · 封面','剪辑或家庭'],['周末','仅在需要时补缺','发布、户外或纯家庭']];
+type Tab='home'|'work'|'family'|'growth'|'media'|'tiantian'|'rhythm'|'parking';
+const navigation=[
+ {label:'总览',items:[['home','本周总览']]},
+ {label:'行动领域',items:[['work','工作事项'],['family','家庭与生活'],['growth','AI与个人成长'],['media','自媒体'],['tiantian','甜甜产品']]},
+ {label:'规划与收纳',items:[['rhythm','每周节奏'],['parking','想法停车场']]},
+] as const;
+const tabInfo:Record<Tab,[string,string,string]>={home:['01','本周总览','只显示本周真正需要守住的结果'],work:['02','工作事项','专项任务与固定运转分开看'],family:['03','家庭与生活','家庭安排和休息也是正式事项'],growth:['04','AI与个人成长','学习服务于成果，不同时追逐所有工具'],media:['05','自媒体','从真实经历提炼内容，不为更新硬做素材'],tiantian:['06','甜甜产品','保持产品节奏，功能依次排队'],rhythm:['07','每周节奏','这是节奏模板，不是强制打卡'],parking:['08','想法停车场','不是放弃，只是排队']};
 export default function Home(){
-const [tasks,setTasks]=useState<Task[]>(defaults);const [tab,setTab]=useState<'rhythm'|'focus'|'parking'>('rhythm');
-useEffect(()=>{const saved=localStorage.getItem('john-weekly-tasks');if(saved)setTasks(JSON.parse(saved));},[]);
-const update=(id:string,status:Status)=>{const next=tasks.map(t=>t.id===id?{...t,status}:t);setTasks(next);localStorage.setItem('john-weekly-tasks',JSON.stringify(next));};
-const done=tasks.filter(t=>t.status==='已完成').length;
-return <main><header className="hero"><div className="eyebrow">JOHN · 每周节奏</div><h1>把想法放回各自的位置</h1><p>工作先履责，家庭要在场，AI走长期，自媒体记录结果。</p><div className="progress"><span style={{width:`${done/tasks.length*100}%`}}/></div><small>本周完成 {done} / {tasks.length} 项 · 不追求全部做满</small></header>
-<nav className="tabs"><button className={tab==='rhythm'?'active':''} onClick={()=>setTab('rhythm')}>每周节奏</button><button className={tab==='focus'?'active':''} onClick={()=>setTab('focus')}>本周重点</button><button className={tab==='parking'?'active':''} onClick={()=>setTab('parking')}>想法停车场</button></nav>
-{tab==='rhythm'&&<section className="section"><div className="sectionHead"><div><span>01</span><h2>晚上交替，早晨创造</h2></div><p>通勤输入与试读 · 午间轻松刷视频和休息</p></div><div className="dayGrid">{week.map(d=><article className={`dayCard ${d.kind}`} key={d.day}><div className="dayName">{d.day}</div><div className="slot"><small>07:00—07:40</small><strong>{d.morning}</strong></div><div className="divider"/><div className="slot"><small>20:00—21:00</small><strong>{d.evening}</strong>{d.note&&<p>{d.note}</p>}</div></article>)}</div><div className="minimum"><b>最低可行周</b><span>一次早晨口播</span><i>＋</i><span>一次果果AI互动</span><i>＋</i><span>一次剪辑</span></div></section>}
-{tab==='focus'&&<section className="section"><div className="sectionHead"><div><span>02</span><h2>本周只盯结果</h2></div><p>点击状态即可更新，记录保存在当前设备</p></div><div className="taskList">{tasks.map(t=><article className="task" key={t.id}><div className="taskTop"><span className="area">{t.area}</span><span className={`priority p-${t.priority}`}>{t.priority}</span></div><h3>{t.result}</h3><p>{t.next}</p><select value={t.status} onChange={e=>update(t.id,e.target.value as Status)}>{['未开始','进行中','已完成','等待他人','暂停'].map(s=><option key={s}>{s}</option>)}</select></article>)}</div></section>}
-{tab==='parking'&&<section className="section"><div className="sectionHead"><div><span>03</span><h2>不是放弃，只是排队</h2></div><p>每周统一看一次，平时不立即切换任务</p></div><div className="parkingList">{parking.map(([idea,when,state])=><article key={idea}><div><small>{state}</small><h3>{idea}</h3></div><p>{when}</p></article>)}</div></section>}
-<footer>果果和爸爸的 AI 之旅 · 慢一点，也是在前进</footer></main>}
+ const [tasks,setTasks]=useState(seed); const [tab,setTab]=useState<Tab>('home');
+ const [syncState,setSyncState]=useState<'连接中'|'已同步'|'正在保存'|'仅本机'>('连接中');const syncTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
+ const normalize=(list:Task[])=>list.map(t=>({...t,note:t.note??'',logs:t.logs??[]}));
+ useEffect(()=>{(async()=>{let local:Task[]|null=null;try{const v=localStorage.getItem('john-workbench-v2');if(v)local=normalize(JSON.parse(v) as Task[])}catch{}try{const res=await fetch('/api/workspace',{cache:'no-store'});if(!res.ok)throw new Error();const body=await res.json() as {data:Task[]|null};if(body.data){const cloud=normalize(body.data);setTasks(cloud);localStorage.setItem('john-workbench-v2',JSON.stringify(cloud))}else{const first=local??seed;setTasks(first);await fetch('/api/workspace',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({data:first})})}setSyncState('已同步')}catch{if(local)setTasks(local);setSyncState('仅本机')}})()},[]);
+ const save=(next:Task[])=>{setTasks(next);localStorage.setItem('john-workbench-v2',JSON.stringify(next));setSyncState('正在保存');if(syncTimer.current)clearTimeout(syncTimer.current);syncTimer.current=setTimeout(async()=>{try{const r=await fetch('/api/workspace',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({data:next})});if(!r.ok)throw new Error();setSyncState('已同步')}catch{setSyncState('仅本机')}},500)};
+ const counts=useMemo(()=>({focus:tasks.filter(t=>t.focus).length,doing:tasks.filter(t=>t.status==='进行中').length,done:tasks.filter(t=>t.status==='已完成').length}),[tasks]);
+ const shown=tab==='home'?tasks.filter(t=>t.focus):tab==='work'?tasks.filter(t=>t.area==='工作'):tab==='family'?tasks.filter(t=>t.area==='生活与家庭'||t.area==='休息娱乐'):tab==='growth'?tasks.filter(t=>t.area==='个人成长'||t.area==='AI与果果'):tab==='media'?tasks.filter(t=>t.area==='AI与自媒体'):tab==='tiantian'?tasks.filter(t=>t.area==='甜甜产品'):[];
+ const info=tabInfo[tab];
+ const updateTask=(id:string,change:Partial<Task>)=>save(tasks.map(x=>x.id===id?{...x,...change}:x));
+ return <main className="appShell"><aside className="sidebar"><div className="brand"><b>JOHN</b><span>个人待办工作台</span></div>{navigation.map(g=><div className="navGroup" key={g.label}><small>{g.label}</small>{g.items.map(([k,v])=><button key={k} className={tab===k?'active':''} onClick={()=>setTab(k)}><i/>{v}</button>)}</div>)}<div className={`sideStatus sync-${syncState}`}><i/>{syncState}<small>{syncState==='已同步'?'云端数据已保存':syncState==='仅本机'?'网络恢复后自动重试':'正在连接数据源'}</small></div></aside><div className="workspace"><header className="hero compact"><div><div className="eyebrow">{info[0]} · {info[1]}</div><h1>{tab==='home'?'把重要的事，放回正确的位置':info[1]}</h1><p>{info[2]}</p></div><div className="metrics"><b>{counts.focus}<small>本周重点</small></b><b>{counts.doing}<small>进行中</small></b><b>{counts.done}<small>已完成</small></b></div></header>
+ <nav className="mobileTabs">{navigation.flatMap(g=>g.items).map(([k,v])=><button key={k} className={tab===k?'active':''} onClick={()=>setTab(k)}>{v}</button>)}</nav>
+ {!['rhythm','parking'].includes(tab)&&<View title={info[1]} note={info[2]} no={info[0]}><div className="taskTable">{shown.map(t=><TaskCard key={t.id} t={t} onChange={s=>updateTask(t.id,{status:s})} onNote={note=>updateTask(t.id,{note})} onLog={log=>updateTask(t.id,{logs:[log,...t.logs]})}/>)}</div>{shown.length===0&&<div className="empty">这个分类暂时没有任务。</div>}</View>}
+ {tab==='rhythm'&&<View title={info[1]} note={info[2]} no={info[0]}><div className="rhythmGrid">{rhythm.map(r=><article key={r[0]}><h3>{r[0]}</h3><small>07:00—07:40</small><b>{r[1]}</b><hr/><small>20:00—21:00</small><b>{r[2]}</b></article>)}</div><div className="minimum">最低可行周：工作重点不失控 ＋ 一次专注陪伴 ＋ 一次主动恢复</div></View>}
+ {tab==='parking'&&<View title={info[1]} note={info[2]} no={info[0]}><div className="parking">{parking.map(x=><article key={x[0]}><div><small>暂不启动</small><h3>{x[0]}</h3></div><p>{x[1]}</p></article>)}</div></View>}
+ <footer>果果和爸爸的 AI 之旅 · 慢一点，也是在前进</footer></div></main>}
+function View({title,note,no,children}:{title:string;note:string;no:string;children:React.ReactNode}){return <section><div className="sectionHead"><div><span>{no}</span><h2>{title}</h2></div><p>{note}</p></div>{children}</section>}
+function TaskCard({t,onChange,onNote,onLog}:{t:Task;onChange:(s:Status)=>void;onNote:(v:string)=>void;onLog:(v:Log)=>void}){const [open,setOpen]=useState(false);const [text,setText]=useState('');const [date,setDate]=useState(t.logs[0]?.date??'');const dates=[...new Set(t.logs.map(l=>l.date))];const selected=t.logs.filter(l=>l.date===(date||dates[0]));const submit=()=>{const value=text.trim();if(!value)return;const today=new Date().toLocaleDateString('sv-SE');onLog({date:today,text:value});setDate(today);setText('');setOpen(false)};return <article className="task"><div className="taskMeta"><span>{t.area}</span><em className={`p-${t.priority}`}>{t.priority}</em><small>{t.cycle}</small></div><h3>{t.title}</h3><p>{t.next}</p><div className="taskFields"><label>状态<select aria-label={`${t.title}状态`} value={t.status} onChange={e=>onChange(e.target.value as Status)}>{['未开始','进行中','等待他人','已完成','暂停'].map(s=><option key={s}>{s}</option>)}</select></label><label>备注<textarea value={t.note} onChange={e=>onNote(e.target.value)} placeholder="背景、约定或需要长期保留的信息"/></label></div><div className="trackBar"><button onClick={()=>setOpen(!open)}>{open?'取消跟踪':'＋ 跟踪'}</button>{dates.length>0&&<label>查看记录<select value={date||dates[0]} onChange={e=>setDate(e.target.value)}>{dates.map(d=><option key={d}>{d}</option>)}</select></label>}</div>{open&&<div className="inlineTrack"><textarea autoFocus value={text} onChange={e=>setText(e.target.value)} placeholder="今天推进了什么、遇到什么问题、下一步是什么？"/><button onClick={submit}>保存今日跟踪</button></div>}{selected.length>0&&<div className="logResults"><small>{date||dates[0]} 跟踪结果</small>{selected.map((l,i)=><p key={i}>{l.text}</p>)}</div>}</article>}

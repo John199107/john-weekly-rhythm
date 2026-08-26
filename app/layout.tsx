@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import './workspace.css';
 
 export const metadata: Metadata = {
-  title: 'John · AI成长与自媒体每周节奏',
-  description: '工作、家庭、AI成长与自媒体的轻量每周计划。',
+  title: 'John个人待办工作台',
+  description: '统筹工作、家庭、个人成长、AI、自媒体与休息的个人工作台。',
 };
 
 export default function RootLayout({
