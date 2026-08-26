@@ -12,5 +12,11 @@ if (-not $listening) {
 $syncRunning = Get-CimInstance Win32_Process -Filter "Name = 'node.exe'" -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -like '*obsidian-sync.mjs*' }
 if (-not $syncRunning) {
     if (-not $env:JOHN_WORKBENCH_URL) { $env:JOHN_WORKBENCH_URL = 'http://localhost:3000' }
-    Start-Process -FilePath $node -ArgumentList '.\sync\obsidian-sync.mjs' -WorkingDirectory $project -WindowStyle Hidden
+    if ($env:JOHN_WORKBENCH_URL -like 'https://*') {
+        $env:HTTPS_PROXY = 'http://127.0.0.1:7890'
+        $env:HTTP_PROXY = 'http://127.0.0.1:7890'
+        Start-Process -FilePath $node -ArgumentList '--use-env-proxy .\sync\obsidian-sync.mjs' -WorkingDirectory $project -WindowStyle Hidden
+    } else {
+        Start-Process -FilePath $node -ArgumentList '.\sync\obsidian-sync.mjs' -WorkingDirectory $project -WindowStyle Hidden
+    }
 }
