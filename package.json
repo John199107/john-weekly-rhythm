@@ -8,10 +8,13 @@
   "scripts": {
     "dev": "vinext dev",
     "build": "vinext build",
+    "build:github": "vite build --config vite.github.config.ts",
+    "preview:github": "vite preview --config vite.github.config.ts",
     "start": "vinext start",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.57.4",
     "next": "16.2.6",
     "react": "19.2.6",
     "react-dom": "19.2.6"
