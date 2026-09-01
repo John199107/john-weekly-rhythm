@@ -11,11 +11,12 @@ const seed:Task[]=raw.map(x=>({id:x[0] as string,area:x[1] as string,title:x[2] 
 const parking=[['小红书起号','四周后再看'],['学习 IMA','出现真实整理需求时'],['DeepSeek / Harness','甜甜进入相关阶段时'],['价值魔方体系','智能体大赛关键节点后']];
 const rhythm=[['周一','输入与选题','家庭 / 休息'],['周二','口播初稿','果果 AI 日'],['周三','修改与试录','剪辑日'],['周四','正式录音 / OBS','果果 AI 日'],['周五','补录 · 标题 · 封面','剪辑或家庭'],['周末','仅在需要时补缺','发布、户外或纯家庭']];
 type Tab='home'|'work'|'family'|'growth'|'media'|'tiantian'|'rhythm'|'parking'|'archive';
-const navigation=[
+type NavItem=[Tab,string];
+const navigation:{label:string;items:NavItem[]}[]=[
  {label:'总览',items:[['home','本周总览']]},
  {label:'行动领域',items:[['work','工作事项'],['family','家庭与生活'],['growth','AI与个人成长'],['media','自媒体'],['tiantian','甜甜产品']]},
  {label:'规划与收纳',items:[['rhythm','每周节奏'],['parking','想法停车场'],['archive','已完成归档']]},
-] as const;
+];
 const tabInfo:Record<Tab,[string,string,string]>={home:['01','本周总览','只显示本周真正需要守住的结果'],work:['02','工作事项','专项任务与固定运转分开看'],family:['03','家庭与生活','家庭安排和休息也是正式事项'],growth:['04','AI与个人成长','学习服务于成果，不同时追逐所有工具'],media:['05','自媒体','从真实经历提炼内容，不为更新硬做素材'],tiantian:['06','甜甜产品','保持产品节奏，功能依次排队'],rhythm:['07','每周节奏','这是节奏模板，不是强制打卡'],parking:['08','想法停车场','不是放弃，只是排队'],archive:['09','已完成归档','完成的事项集中保留，需要时仍可调整']};
 export default function Home(){
  const [tasks,setTasks]=useState(seed); const [tab,setTab]=useState<Tab>('home');

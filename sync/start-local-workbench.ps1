@@ -1,22 +1,19 @@
-$project = 'C:\Users\76114\Documents\Codex\2026-08-18\referenced-chatgpt-conversation-this-is-an-2\weekly-rhythm-site'
-$node = 'C:\Users\76114\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
-$pnpm = 'C:\Users\76114\.cache\codex-runtimes\codex-primary-runtime\dependencies\bin\fallback\pnpm.cmd'
-$env:PATH = 'C:\Users\76114\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin;C:\Users\76114\.cache\codex-runtimes\codex-primary-runtime\dependencies\bin\fallback;' + $env:PATH
+# 启动 Obsidian 同步：读 Supabase 云端工作台数据，写入 Obsidian md
+# 使用方式：右键「使用 PowerShell 运行」，或在本目录执行 .\start-local-workbench.ps1
 
-$listening = Get-NetTCPConnection -LocalPort 3000 -State Listen -ErrorAction SilentlyContinue
-if (-not $listening) {
-    Start-Process -FilePath $pnpm -ArgumentList 'dev' -WorkingDirectory $project -WindowStyle Hidden
-    Start-Sleep -Seconds 5
+$project = 'D:\Resourse\WorkBuddy\2026-08-04-09-20-50\workbench-codex\john-weekly-rhythm'
+
+# 优先用系统 node（需要 >= 20.12，支持 process.loadEnvFile）
+$node = Get-Command node -ErrorAction SilentlyContinue
+if (-not $node) {
+    Write-Host '未找到 node，请先安装 Node.js 20.12+ 或 22+' -ForegroundColor Red
+    exit 1
 }
 
 $syncRunning = Get-CimInstance Win32_Process -Filter "Name = 'node.exe'" -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -like '*obsidian-sync.mjs*' }
 if (-not $syncRunning) {
-    if (-not $env:JOHN_WORKBENCH_URL) { $env:JOHN_WORKBENCH_URL = 'http://localhost:3000' }
-    if ($env:JOHN_WORKBENCH_URL -like 'https://*') {
-        $env:HTTPS_PROXY = 'http://127.0.0.1:7890'
-        $env:HTTP_PROXY = 'http://127.0.0.1:7890'
-        Start-Process -FilePath $node -ArgumentList '--use-env-proxy .\sync\obsidian-sync.mjs' -WorkingDirectory $project -WindowStyle Hidden
-    } else {
-        Start-Process -FilePath $node -ArgumentList '.\sync\obsidian-sync.mjs' -WorkingDirectory $project -WindowStyle Hidden
-    }
+    Start-Process -FilePath 'node' -ArgumentList '.\sync\obsidian-sync.mjs' -WorkingDirectory $project
+    Write-Host 'Obsidian 同步已启动（窗口保持打开即持续同步，关闭窗口即停止）'
+} else {
+    Write-Host 'Obsidian 同步已在运行，无需重复启动'
 }
