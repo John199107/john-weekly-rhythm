@@ -13,24 +13,26 @@
 .treeLegend .legendItem{display:inline-flex;align-items:center;gap:5px;font-weight:600}
 .treeLegend .legendItem i{width:12px;height:12px;border-radius:3px;display:inline-block}
 .treeLegend small{margin-left:auto;color:#5a7390;font-weight:500}
-.tnCard{display:flex;align-items:center;gap:10px;padding:0 12px 0 0;background:#fff;border:1px solid #dde6ef;border-top:1px solid #fff;border-left:6px solid #888;border-radius:16px;box-shadow:0 4px 14px rgba(40,80,140,.08),inset 0 1px 0 rgba(255,255,255,.9);box-sizing:border-box;transition:transform .18s ease,box-shadow .18s ease;animation:card-in 1s cubic-bezier(.3,1.18,.55,1) backwards}
+.tnCard{display:flex;align-items:center;gap:14px;padding:0 18px;background:#fff;border:1px solid #dde6ef;border-top:1px solid #fff;border-left:6px solid #888;border-radius:18px;box-shadow:0 4px 14px rgba(40,80,140,.08),inset 0 1px 0 rgba(255,255,255,.9);box-sizing:border-box;transition:transform .18s ease,box-shadow .18s ease;animation:card-in 1s cubic-bezier(.3,1.18,.55,1) backwards;min-height:76px}
 .tnCard.noAnim{animation:none}
 .tnCard:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(40,120,200,.18),inset 0 1px 0 rgba(255,255,255,.9)}
 .tnCard.isDone{background:#f3f5f8}
 .tnCard.isDone .tnTitle{color:#8a93a8;text-decoration:line-through}
 .tnCard.isDeleted{opacity:.72}
-.tnExpand{width:24px;height:30px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;border:0;background:transparent;color:#1d4a9e;font-size:16px;font-weight:800;cursor:pointer;padding:0}
-.tnBody{flex:1;min-width:0;padding:4px 0}
+.tnExpand{width:24px;height:30px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;border:0;background:transparent;color:#1d4a9e;font-size:16px;font-weight:400;cursor:pointer;padding:0}
+.tnBody{flex:1;min-width:0;padding:6px 0;display:flex;flex-direction:column;gap:2px;justify-content:center}
 .tnTitle{font-size:15px;font-weight:400;color:#1a2a3a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tnCount{display:inline-block;margin-left:7px;padding:1px 7px;border-radius:999px;background:#dbeafe;color:#2563a8;font-size:11px;font-weight:700}
-.tnNext{font-size:11.5px;color:#7a8795;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
-.tnStatus{flex-shrink:0;border:0;border-radius:999px;padding:4px 11px;color:#fff;font-size:12px;font-weight:700;cursor:pointer}
+.tnCount{display:inline-block;margin-left:7px;padding:1px 7px;border-radius:999px;background:#dbeafe;color:#2563a8;font-size:11px;font-weight:500}
+.tnNext{font-size:11.5px;font-weight:400;color:#7a8795;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tnRight{flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.tnTags{display:flex;align-items:center;gap:6px}
+.tnStatus{border:0;border-radius:999px;padding:4px 11px;color:#fff;font-size:11.5px;font-weight:500;cursor:pointer}
 .tnStatus:hover{filter:brightness(1.08)}
-.tnArea{flex-shrink:0;font-size:12px;padding:4px 10px;border-radius:7px;font-weight:700}
-.tnPrio{flex-shrink:0;font-size:12px;padding:4px 11px;border-radius:999px;color:#fff;font-weight:700}
-.tnActions{flex-shrink:0;display:flex;gap:5px}
-.tnActions button{border:0;border-radius:8px;padding:6px 9px;font-size:11.5px;font-weight:700;background:#eef4fb;color:#2563a8;cursor:pointer;white-space:nowrap}
+.tnArea{font-size:11px;padding:3px 9px;border-radius:6px;font-weight:500}
+.tnPrio{font-size:11px;padding:3px 10px;border-radius:999px;color:#fff;font-weight:500}
+.tnActions{display:flex;gap:4px}
+.tnActions button{border:0;border-radius:7px;padding:5px 9px;font-size:11px;font-weight:500;background:transparent;color:#2563a8;cursor:pointer;white-space:nowrap}
 .tnActions button:hover{background:#dbeafe}
-.tnActions button.danger{background:#fdeaea;color:#b32b45}
-.tnActions button.danger:hover{background:#f9d2d2}
-@media(max-width:640px){.tnArea,.tnPrio{display:none}.tnCard{gap:6px;padding:0 8px 0 0}.tnActions button{padding:6px 7px}.treeLegend small{display:none}}
+.tnActions button.danger{color:#b32b45}
+.tnActions button.danger:hover{background:#fdeaea}
+@media(max-width:640px){.tnArea,.tnPrio{display:none}.tnCard{gap:8px;padding:0 12px;min-height:66px}.tnActions button{padding:5px 7px}.treeLegend small{display:none}}
