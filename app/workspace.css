@@ -23,14 +23,6 @@
 .tnCard.isFolder:hover{box-shadow:0 10px 24px rgba(180,140,40,.20),inset 0 1px 0 rgba(255,255,255,.9)}
 .tnCard.isFolder .tnTitle{color:#5a3a18;font-weight:400}
 .tnCard.isFolder.isDone{background:#f3ede0}
-.tnCard.mergeTarget{outline:2px dashed #2563a8;outline-offset:2px;background:#eaf3ff}
-.tnCard.mergeFrom{outline:2px solid #2563a8;outline-offset:2px}
-.mergeToast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%);z-index:90;display:flex;align-items:center;gap:12px;padding:11px 16px;border-radius:14px;background:#0e2a4a;color:#fff;box-shadow:0 14px 36px #0e2a4a55;font-size:13px}
-.mergeToast small{color:#9fb8d0;font-size:11px;display:block}
-.mergeToast button{border:0;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;background:#ffffff14;color:#e5edf6;cursor:pointer}
-.mergeToast button:hover{background:#ffffff22}
-.mergeToast .mergeCancel{background:#b32b45;color:#fff}
-.mergeToast .mergeCancel:hover{background:#9a2538}
 .ovGroup{margin-bottom:18px}
 .ovGroupHeader{display:flex;align-items:center;gap:10px;padding:6px 8px;margin-bottom:8px;font-size:13px;font-weight:600;color:#0e2a4a}
 .ovGroupHeader i{width:10px;height:10px;border-radius:50%}
